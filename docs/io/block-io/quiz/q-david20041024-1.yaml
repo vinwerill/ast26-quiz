@@ -5,7 +5,7 @@ question: |
 
   - IOPS 上限：500K
   - Bandwidth 上限：1.5 GB/s
-  - CPU 可以處理 interrupt 每秒約 400K 次，不然會出現 interrupt storm，不然就切換成Polling 模式。
+  - CPU 可以處理 interrupt 每秒約 400K 次，會出現 interrupt storm，所以會切換成Polling 模式。
 
   今天我先random 4 KB read一陣子，再 sequential 256 KB write一陣子。
   請問在這兩個操作中，分別是什麼瓶頸與CPU模式？
