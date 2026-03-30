@@ -15,11 +15,11 @@ options:
       使用 SGL 可讓 DMA 直接將資料寫入這些分散的 buffer，避免先集中再拆分，
       因此能有效降低 memcpy 成本並提升效能。
 
-  - text: "**影片串流服務** 順序讀取一段 8MB 的影片資料，並寫入一塊由 driver 提供的單一 linear DMA buffer。"
-    explanation: |
-      此情境中裝置可透過單一 base address 與長度完成 DMA，
-      不需要描述多段記憶體區塊。
-      使用 SGL 只會增加 descriptor 管理成本，無法帶來效能提升。
+  - text: "**影片串流服務** 順序讀取一段 8MB 的影片資料，裝置可透過單一 base address 與長度完成 DMA，且不支援多段記憶體描述。"
+  explanation: |
+    此情境中裝置僅支援單一區段的 DMA 存取，不支援分段描述。
+    因此無法使用 SGL，也不存在需要避免的資料重組或 memcpy 問題，
+    使用 SGL 不會帶來任何效益。
 
   - text: "**備份系統** 順序讀取大型檔案，並將資料寫入一塊由 DMA API 保證為單一連續區段的 buffer。"
     explanation: |
