@@ -3,26 +3,30 @@ date: 2026-03-30
 question: |
   你正在優化一個高效能 NVMe I/O path，並評估是否導入 Scatter-Gather List（SGL）來降低 memcpy 成本並提升 throughput。
 
-  在以下四種實際 workload 中，系統皆透過 DMA 將資料從 SSD 傳輸到 host memory。請判斷在哪一種情境下，使用 SGL 能帶來最明顯的效能提升，並說明原因。
+  已知 NVMe 單一 read command 要求對應的磁碟位址（LBA）必須是連續的，而 SGL 的作用在於描述多段分散的記憶體區塊，讓 DMA 可以直接將資料寫入多個 buffer。
+
+  在以下四種實際情境中，請判斷在哪一種情況下，使用 SGL 能最有效避免額外 memcpy，並帶來最明顯的效能提升。
 options:
-  - text: "**資料庫系統** 執行 OLTP workload，隨機讀取多筆紀錄；每筆資料分散在不同的 4KB page cache 中，需組合成一次回應傳送給 application。"
+  - text: "**儲存系統** 讀取一段連續的 16KB 磁碟資料，並將資料直接寫入 4 個分開配置的 4KB page（例如來自 page cache 的 buffer）。"
     correct: true
     explanation: |
-      此情境為典型隨機讀取，資料分散在多個不連續的 memory page 中。
-      使用 SGL 可讓 DMA 直接存取多個 buffer，避免將資料先 memcpy 到一個連續 buffer。
-      在高 IOPS workload 下，這種 zero-copy 能顯著降低 CPU 負擔並提升 throughput。
+      此情境中磁碟位址是連續的，因此可以用單一 NVMe command 完成讀取；
+      但目標 buffer 分散在多個 page。
+      使用 SGL 可讓 DMA 直接將資料寫入這些分散的 buffer，避免先集中再拆分，
+      能有效降低 memcpy 成本並提升效能。
 
-  - text: "**影片串流服務** 順序讀取一個 8MB 的影片區塊，並將資料寫入一個預先配置好的連續 buffer。"
+  - text: "**影片串流服務** 順序讀取一段 8MB 的影片資料，並寫入一塊由系統一次配置的大型連續 buffer。"
     explanation: |
-      此為連續讀取且 memory 也是連續配置，DMA 可以直接寫入單一 buffer。
-      使用 SGL 反而增加 descriptor 管理成本，沒有實質效益。
+      此情境中資料會被寫入單一大型 buffer，DMA 可直接線性寫入。
+      不需要描述多段記憶體區塊，因此使用 SGL 不會帶來效益，反而增加管理成本。
 
-  - text: "**備份系統** 順序掃描大型檔案（數百 MB），並逐段寫入一塊大型連續記憶體區域以進行壓縮處理。"
+  - text: "**備份系統** 順序讀取大型檔案，並將資料寫入一個連續配置的工作區域，供後續壓縮流程使用。"
     explanation: |
-      雖然資料量大，但存取模式為連續讀取，且目標 buffer 也是連續的。
-      在此情況下，SGL 無法減少 memcpy，也無法改善 DMA 效率。
+      此為典型 sequential I/O，且目標 buffer 為單一連續區域。
+      在此情況下沒有額外的資料重組需求，因此 SGL 無法減少 memcpy 或提升效能。
 
-  - text: "**影像處理程式** 讀取一張 16MB 的圖片檔案，並將其完整載入一個連續配置的 image buffer 進行後續運算。"
+  - text: "**影像處理程式** 讀取一張 16MB 的圖片檔案，並將其完整載入一個預先配置好的單一影像 buffer 進行運算。"
     explanation: |
-      此情境中資料來源與目的地皆為連續區域，I/O pattern 為順序讀取。
-      使用單一 buffer 已是最佳方式，SGL 不會帶來額外效能提升。
+      此情境中資料來源與目的地皆為單一連續區域，
+      DMA 可直接完成資料傳輸，不涉及多段 buffer。
+      因此使用 SGL 不會帶來實質效益。
