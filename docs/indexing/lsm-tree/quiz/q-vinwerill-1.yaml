@@ -2,7 +2,7 @@ author: vinwerill
 date: 2026-04-02
 question: |
   你正在設計一個資料庫系統，其 workload 特性為「低頻率讀取，但高頻率寫入」。
-  為了在此情境下達到最佳效能，你需要選擇合適的索引結構與 compaction 策略。
+  為了在此情境下達到最佳效能，你需要選擇合適的索引結構。
 
   在以下四種組合中，請判斷哪一個最適合此 workload。
 options:
@@ -16,7 +16,8 @@ options:
   - text: "使用 B+ Tree 搭配 Leveled Compaction"
     explanation: |
       B+ Tree 並不使用 compaction 機制，Leveled Compaction 是 LSM Tree 的策略之一，
-      此選項將兩種不同架構混用，概念上不正確。
+      此外，B+ Tree 在高頻寫入下仍需頻繁進行 random I/O 與 node split，
+      並不適合寫入密集型 workload。
 
   - text: "使用 LSM Tree 搭配 Leveled Compaction"
     explanation: |
