@@ -25,7 +25,7 @@ options:
       雖然不做 compaction 可以暫時避免資料重寫，
       但會導致 read amplification 極高，查詢需掃描大量 SSTable，
       並且 metadata 與空間管理成本也會快速惡化，
-      在實務上並不可行。
+      不適合此情境。
 
   - text: "使用 B+ Tree，因其結構穩定且不需要額外背景維護機制，能有效支援高頻寫入。"
     explanation: |
