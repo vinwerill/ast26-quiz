@@ -2,31 +2,33 @@ author: vinwerill
 date: 2026-04-02
 question: |
   你正在設計一個資料庫系統，其 workload 特性為「低頻率讀取，但高頻率寫入」。
-  為了在此情境下達到最佳效能，你需要選擇合適的索引結構。
+  系統的主要目標是最大化寫入吞吐量，並允許較高的 read amplification 與 space overhead。
 
-  在以下四種組合中，請判斷哪一個最適合此 workload。
+  在以下四種設計選擇中，請判斷哪一個最適合此情境。
 options:
-  - text: "使用 LSM Tree 搭配 Tiered Compaction"
+  - text: "使用 LSM Tree 搭配 Tiered Compaction，可降低 write amplification 並提升高頻寫入效能。"
     correct: true
     explanation: |
       LSM Tree 將寫入轉為 sequential I/O，適合高頻寫入情境。
-      Tiered Compaction 則延後合併時機，減少資料重寫次數（write amplification 較低），
-      因此在寫入密集、讀取較少的 workload 下，能有效提升整體效能。
+      Tiered Compaction 透過延後 merge，減少資料被重寫的次數，
+      因此 write amplification 較低，在寫入優先的 workload 下更具優勢，
+      即使會增加 read amplification 與空間使用也可接受。
 
-  - text: "使用 B+ Tree 搭配 Leveled Compaction"
+  - text: "使用 LSM Tree 搭配 Leveled Compaction，可在維持低 write amplification 的同時提供穩定讀取效能。"
     explanation: |
-      B+ Tree 並不使用 compaction 機制，Leveled Compaction 是 LSM Tree 的策略之一，
-      此外，B+ Tree 在高頻寫入下仍需頻繁進行 random I/O 與 node split，
-      並不適合寫入密集型 workload。
+      Leveled Compaction 會頻繁進行資料重寫以維持每層只有一份資料，
+      導致較高的 write amplification。
+      雖然讀取效能較佳，但不符合「寫入優先」的設計目標。
 
-  - text: "使用 LSM Tree 搭配 Leveled Compaction"
+  - text: "使用 LSM Tree 但不進行 compaction，讓 SSTable 持續累積以完全避免 write amplification。"
     explanation: |
-      雖然 LSM Tree 適合寫入，但 Leveled Compaction 會頻繁進行 merge，
-      導致較高的 write amplification，反而不利於高頻寫入情境。
-      它較適合讀取頻繁、需要低 read amplification 的 workload。
+      雖然不做 compaction 可以暫時避免資料重寫，
+      但會導致 read amplification 極高，查詢需掃描大量 SSTable，
+      並且 metadata 與空間管理成本也會快速惡化，
+      在實務上並不可行。
 
-  - text: "使用 B+ Tree 搭配 Tiered Compaction"
+  - text: "使用 B+ Tree，因其結構穩定且不需要額外背景維護機制，能有效支援高頻寫入。"
     explanation: |
-      B+ Tree 並沒有 compaction 機制，Tiered Compaction 屬於 LSM Tree 的設計。
-      此外，B+ Tree 在高頻寫入下仍需頻繁進行 random I/O 與 node split，
-      並不適合寫入密集型 workload。
+      B+ Tree 在寫入時需要進行 random I/O，並可能觸發 node split，
+      在高頻寫入情境下效能通常不如 LSM Tree。
+      雖然其讀取延遲穩定，但不符合寫入優先的需求。
