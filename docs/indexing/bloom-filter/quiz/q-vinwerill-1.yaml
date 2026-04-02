@@ -1,0 +1,31 @@
+author: vinwerill
+date: 2026-04-02
+question: |
+  根據 Bloom Paradox 的觀點，當資料庫系統的 hit rate 非常高時，
+  通常不適合使用 Bloom Filter。請問以下哪一個選項最能正確說明其原因？
+options:
+  - text: "當 hit rate 很高時，Bloom Filter 幾乎總是回傳 positive，仍需進行實際 lookup，反而增加額外查詢成本。"
+    correct: true
+    explanation: |
+      當 key 大多存在時，Bloom Filter 無法有效過濾查詢，
+      幾乎每次都回傳 positive，導致仍需進行實際 lookup。
+      此時 Bloom Filter 會增加額外的 hash 計算與記憶體存取，
+      因此可能造成額外成本，形成 Bloom Paradox，使其不適合使用。
+
+  - text: "當 hit rate 很高時，Bloom Filter 的 false positive rate 會顯著上升，導致查詢結果錯誤。"
+    explanation: |
+      false positive rate 與 Bloom Filter 的大小（m）與 hash 數量（k）有關，
+      並不會因為 hit rate 高而顯著上升。
+      且 Bloom Filter 不會產生 false negative，因此不影響查詢正確性。
+
+  - text: "Bloom Filter 的額外記憶體使用在高 hit rate 的情況下會加重系統負擔，因此不適合使用。"
+    explanation: |
+      Bloom Filter 的空間使用主要取決於預期元素數量與目標 false positive rate，
+      並不會因為 hit rate 提高而增加。
+      因此這不是 Bloom Filter 不適用的主要原因。
+
+  - text: "當 hit rate 很高時，Bloom Filter 需要儲存更多資料以維持準確率，導致空間成本過高。"
+    explanation: |
+      Bloom Filter 的空間使用主要取決於預期元素數量與目標 false positive rate，
+      並不會因為 hit rate 提高而增加。
+      因此這不是 Bloom Filter 不適用的主要原因。
