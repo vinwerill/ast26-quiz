@@ -2,7 +2,7 @@ author: vinwerill
 date: 2026-04-03
 question: |
   你正在設計一個基於 CSAL 的儲存系統，
-  目標是透過暫存層（staging layer）將上層應用產生的 random write
+  目標是透過暫存層將上層應用產生的 random write
   重新組織為對 QLC SSD 較友善的 sequential write。
 
   該暫存層需要長時間承受高頻率的小量寫入，
