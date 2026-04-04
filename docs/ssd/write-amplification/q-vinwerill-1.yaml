@@ -18,7 +18,7 @@ options:
     explanation: |
       將 random write 轉為 sequential write 可減少 fragmentation，提升 block utilization，降低 GC 搬移需求，是 FDP 實作的重要手段。
 
-  - text: "支援將資料既能順序寫入也能隨機寫入，以提升寫入彈性與可整合性"
+  - text: "支援將資料既能順序寫入也能隨機寫入"
     correct: true
     explanation: |
       FDP 允許資料同時支援順序寫入與隨機寫入，提升管理彈性與 host/SSD 協作整合性，但這個特性本身不會自動降低 NAND 寫入量或 GC 搬移，因此與降低 WAF 無直接關係。
